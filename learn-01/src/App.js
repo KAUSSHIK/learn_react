@@ -28,16 +28,34 @@ import { useState } from 'react';
 
 export function Board() {
 
-  const [squares, setSquares] = useState(Array(9).fill(null));
-
+  const [squares, setSquares] = useState(Array(9).fill(null)); // what the hell is useState? -- it's a hook, a function that lets you use state in a functional component.
+  const [xIsNext, setXIsNext] = useState(true); // xIsNext is a boolean, and setXIsNext is a function that lets you change the value of xIsNext.
   function handleClick(index){
-    const nextSquares = squares.slice();
-    nextSquares[index] = 'X';
+    if (squares[index] || calculateWinner(squares)){
+      return;
+    }
+    const nextSquares = squares.slice(); // slice is a method that returns a copy of the array.
+  
+    if (xIsNext){
+      nextSquares[index] = 'X';
+    } else {
+      nextSquares[index] = 'O';
+    }
+    setXIsNext(!xIsNext);
     setSquares(nextSquares);
   }
 
+  const winner = calculateWinner(squares);
+  let status;
+  if (winner){
+    status = 'Winner: ' + winner;
+  } else {
+    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
+  } 
+
   return (
     <>
+      <div className='status'>{status}</div>
       <div className='board-row'>
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
         <Square value={squares[1]} onSquareClick={() =>handleClick(1)} />
@@ -68,6 +86,28 @@ function Square({value, onSquareClick}) {
   // }
 
   return (<button className='square' onClick={onSquareClick}>{value}</button>);
+}
+
+// winner function
+function calculateWinner(squares){
+  const lines = [
+    [0, 1, 2], 
+    [3, 4, 5], 
+    [6, 7, 8], 
+    [0, 3, 6], 
+    [1, 4, 7], 
+    [2, 5, 8], 
+    [0, 4, 8], 
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++){
+    const [a, b, c] = lines[i]; // destructuring <-> unpacking
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]){
+      return squares[a];
+    }
+  }
+  return null;
+
 }
 
 export default function main_function () {
