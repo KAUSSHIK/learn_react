@@ -26,10 +26,8 @@ import { useState } from 'react';
 
 // 
 
-export function Board() {
+export function Board({xIsNext, squares, onPlay}) {
 
-  const [squares, setSquares] = useState(Array(9).fill(null)); // what the hell is useState? -- it's a hook, a function that lets you use state in a functional component.
-  const [xIsNext, setXIsNext] = useState(true); // xIsNext is a boolean, and setXIsNext is a function that lets you change the value of xIsNext.
   function handleClick(index){
     if (squares[index] || calculateWinner(squares)){
       return;
@@ -41,8 +39,7 @@ export function Board() {
     } else {
       nextSquares[index] = 'O';
     }
-    setXIsNext(!xIsNext);
-    setSquares(nextSquares);
+    onPlay(nextSquares);
   }
 
   const winner = calculateWinner(squares);
@@ -88,6 +85,49 @@ function Square({value, onSquareClick}) {
   return (<button className='square' onClick={onSquareClick}>{value}</button>);
 }
 
+export default function Game() {
+
+  const [history, setHistory] = useState([Array(9).fill(null)]); // history is an array of arrays
+  const [currentMove, setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
+  const xIsNext = currentMove % 2 === 0;
+
+  function handlePlay(nextSquares){
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove){
+    setCurrentMove(nextMove);
+  }
+
+  const moves = history.map((squares, move) =>{
+    let description;
+    if (move > 0){
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+      <li key ={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+
+  });
+
+  return (
+    <div className='game'>
+      <div className='game-board'>
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className='game-info'>
+        <ol>{moves}</ol>
+      </div>
+    </div>);
+}
+
 // winner function
 function calculateWinner(squares){
   const lines = [
@@ -110,7 +150,4 @@ function calculateWinner(squares){
 
 }
 
-export default function main_function () {
-   return Board();
-}
 
